@@ -1,5 +1,5 @@
 class LabTwo:
-
+#sa bag un cod
     def __init__(self):
         self.myFile = open("grafpond.in")
         self.vert, self.edges = self.findEV()
