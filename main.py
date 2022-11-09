@@ -4,6 +4,7 @@ class LabTwo:
 #third comment
 #fourth comment
 #fifth comment
+# to continue
     def __init__(self):
         self.myFile = open("grafpond.in")
         self.vert, self.edges = self.findEV()
