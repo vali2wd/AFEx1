@@ -41,6 +41,7 @@ class LabTwo:
             parent[yroot] = xroot
             # increment as to keep track of size
             rank[xroot] += 1
+
     def KruskalFast(self):
         output = []
         parent = []
@@ -61,6 +62,52 @@ class LabTwo:
             y = self.find(parent, b)
 
             # one way of saying: they won't form a cycle
+            # or if they belong to different sets
+            if x != y:
+                e += 1
+                output.append([a,b,weight])
+                self.union(parent, rank, x, y)
+
+        for u, v, weight in output:
+            print(u, '-', v, '@', weight)
+
+        return output
+
+    def KruskalFastEdgesConstrained(self, arr = [[]]):
+        output = []
+        parent = []
+        rank = []
+        i, e = 0, 1
+
+        #initialize to fit nodes in array/ rank
+        for node in range(self.vert + 1):
+            parent.append(node)
+            rank.append(0)
+
+        # boiler/ just go through arr and and find/union the nodes
+        for a,b in arr:
+            x = self.find(parent, a)
+            y = self.find(parent, b)
+
+            # one way of saying: they won't form a cycle
+            # or if they belong to different sets
+            if x != y:
+                e += 1
+                output.append([a, b, "Unknown"])
+                self.union(parent, rank, x, y)
+
+
+
+        #while for all nodes to be visited
+        while e < self.vert:
+            # picks edges in ascending order
+            a, b, weight = self.graph[i]
+            i += 1
+            x = self.find(parent, a)
+            y = self.find(parent, b)
+
+            # one way of saying: they won't form a cycle
+            # or if they belong to different sets
             if x != y:
                 e += 1
                 output.append([a,b,weight])
@@ -73,4 +120,9 @@ class LabTwo:
 
 
 X = LabTwo()
+print("🦅 Kruskal MlogN:")
 X.KruskalFast()
+print('*','-'*15)
+print("🦅 Kruskal MlogN with constrained edges:")
+myArr = [[1,4],[2,3],[5,2]]
+X.KruskalFastEdgesConstrained(myArr)
