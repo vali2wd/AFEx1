@@ -1,10 +1,61 @@
+
+from typing import List, Dict # For annotations
+
+class Node :
+    def __init__(self, arg_id):
+        self._id = arg_id
+
+    @property
+    def id(self):
+        return self._id
+
+
 class LabTwo:
     #solving first lab
     def __init__(self):
         self.myFile = open("grafpond.in")
         self.vert, self.edges = self.findEV()
         self.graph = []
-        self.graph = self.readForm()
+        self.mydict = {}
+        self.graph, self.mydict = self.readForm()
+
+    def PrimFast(self) -> int:
+        # Priority queue is implemented as a dictionary with
+        # key as an object of 'Node' class and value as the cost of
+        # reaching the node from the source.
+        # Since the priority queue can have multiple entries for the
+        # same adjacent node but a different cost, we have to use objects as
+        # keys so that they can be stored in a dictionary.
+        # [As dictionary can't have duplicate keys so objectify the key]
+
+        # The distance of source node from itself is 0. Add source node as the first node
+        # in the priority queue
+        priority_queue = {Node(1): 0}
+        added = [False] * (len(self.mydict)+10)
+        min_span_tree_cost = 0
+
+        while priority_queue:
+            
+            # Choose the adjacent node with the least edge cost
+            node = min(priority_queue, key=priority_queue.get)
+
+            cost = priority_queue[node]
+
+            # Remove the node from the priority queue
+            del priority_queue[node]
+
+            if not added[node.id]:
+                min_span_tree_cost += cost
+                added[node.id] = True
+                print("Added Node : " + str(node.id) + ", cost now : " + str(min_span_tree_cost))
+
+                for item in self.mydict[node.id]:
+                    adjnode = item[0]
+                    adjcost = item[1]
+                    if not added[adjnode]:
+                        priority_queue[Node(adjnode)] = adjcost
+
+        return min_span_tree_cost
 
     def findEV(self):
         line = self.myFile.readline().split()
@@ -12,13 +63,17 @@ class LabTwo:
 
     def readForm(self):
         r = []
+        d = {i:[] for i in range(1, self.vert + 1)}
+
         for i in range(self.edges):
             line = self.myFile.readline().split()
             a,b,c = int(line[0]), int(line[1]), int(line[2])
             r.append([a,b,c])
             r.append([b,a,c])
             r.sort(key= lambda x: x[2])
-        return r
+            d[a].append((b,c))
+            d[b].append((a,c))
+        return r, d
 
     def find(self, parent, i):
         # return recursively root of roots from quick-union
@@ -120,9 +175,11 @@ class LabTwo:
 
 
 X = LabTwo()
-print("🦅 Kruskal MlogN:")
-X.KruskalFast()
-print('*','-'*15)
-print("🦅 Kruskal MlogN with constrained edges:")
-myArr = [[1,4],[2,3],[5,2]]
-X.KruskalFastEdgesConstrained(myArr)
+# print("🦅 Prim ElogE:")
+X.PrimFast()
+# print("🦅 Kruskal MlogN:")
+# X.KruskalFast()
+# print('*','-'*15)
+# print("🦅 Kruskal MlogN with constrained edges:")
+# myArr = [[1,4],[2,3],[5,2]]
+# X.KruskalFastEdgesConstrained(myArr)
