@@ -1,7 +1,16 @@
+from typing import List, Dict  # For annotations
 
-from typing import List, Dict # For annotations
+import sys, os
 
-class Node :
+# Disable
+def blockPrint():
+    sys.stdout = open(os.devnull, 'w')
+
+# Restore
+def enablePrint():
+    sys.stdout = sys.__stdout__
+
+class Node:
     def __init__(self, arg_id):
         self._id = arg_id
 
@@ -11,7 +20,7 @@ class Node :
 
 
 class LabTwo:
-    #solving first lab
+    # solving first lab
     def __init__(self):
         self.myFile = open("grafpond.in")
         self.vert, self.edges = self.findEV()
@@ -31,11 +40,11 @@ class LabTwo:
         # The distance of source node from itself is 0. Add source node as the first node
         # in the priority queue
         priority_queue = {Node(1): 0}
-        added = [False] * (len(self.mydict)+10)
+        added = [False] * (len(self.mydict) + 10)
         min_span_tree_cost = 0
 
         while priority_queue:
-            
+
             # Choose the adjacent node with the least edge cost
             node = min(priority_queue, key=priority_queue.get)
 
@@ -63,16 +72,16 @@ class LabTwo:
 
     def readForm(self):
         r = []
-        d = {i:[] for i in range(1, self.vert + 1)}
+        d = {i: [] for i in range(1, self.vert + 1)}
 
         for i in range(self.edges):
             line = self.myFile.readline().split()
-            a,b,c = int(line[0]), int(line[1]), int(line[2])
-            r.append([a,b,c])
-            r.append([b,a,c])
-            r.sort(key= lambda x: x[2])
-            d[a].append((b,c))
-            d[b].append((a,c))
+            a, b, c = int(line[0]), int(line[1]), int(line[2])
+            r.append([a, b, c])
+            r.append([b, a, c])
+            r.sort(key=lambda x: x[2])
+            d[a].append((b, c))
+            d[b].append((a, c))
         return r, d
 
     def find(self, parent, i):
@@ -103,12 +112,12 @@ class LabTwo:
         rank = []
         i, e = 0, 1
 
-        #initialize to fit nodes in array/ rank
+        # initialize to fit nodes in array/ rank
         for node in range(self.vert + 1):
             parent.append(node)
             rank.append(0)
 
-        #while for all nodes to be visited
+        # while for all nodes to be visited
         while e < self.vert:
             # picks edges in ascending order
             a, b, weight = self.graph[i]
@@ -120,7 +129,7 @@ class LabTwo:
             # or if they belong to different sets
             if x != y:
                 e += 1
-                output.append([a,b,weight])
+                output.append([a, b, weight])
                 self.union(parent, rank, x, y)
 
         for u, v, weight in output:
@@ -128,19 +137,62 @@ class LabTwo:
 
         return output
 
-    def KruskalFastEdgesConstrained(self, arr = [[]]):
+    def MSTprinter(self, output = [[]]):
+        for u, v, weight in output:
+            print(u, '-', v, '@', weight)
+    def KruskalSecBest(self):
+        # just CROSS OUT from big graph an EDGE, one by one, present in MST (solved w/ Krsukal at the beginning)
+        mySolution = sys.maxsize
+        myVec = []
+        blockPrint()
+        MST = self.KruskalFast()
+        enablePrint()
+        blockPrint()
+        for MSTEdge in MST:
+            node1, node2, dist = MSTEdge[0],MSTEdge[1],MSTEdge[2]
+            # find first edge with given spec, second will be the one right after
+            # you may use same e1 after popping to remove both of them
+            e1 = self.graph.index([node1,node2,dist])
+
+            # e2 = e1 + 1
+            self.graph.pop(e1)
+            self.graph.pop(e1)
+
+
+            reCalcMST = self.KruskalFast()
+            totalCost = [sum(i) for i in zip(*reCalcMST)]
+            print("Total Cost:", totalCost[2])
+
+            if mySolution != min(totalCost[2], mySolution):
+                myVec = reCalcMST
+
+            mySolution = min(totalCost[2], mySolution)
+            print('^', '-'*20)
+            self.graph.insert(e1,[node1,node2,dist])
+            self.graph.insert(e1 + 1, [node2, node1, dist])
+        enablePrint()
+        print("1st:")
+        self.MSTprinter(MST)
+        print('^' * 20)
+        print("2nd:")
+        self.MSTprinter(myVec)
+        print(mySolution)
+
+
+
+    def KruskalFastEdgesConstrained(self, arr=[[]]):
         output = []
         parent = []
         rank = []
         i, e = 0, 1
 
-        #initialize to fit nodes in array/ rank
+        # initialize to fit nodes in array/ rank
         for node in range(self.vert + 1):
             parent.append(node)
             rank.append(0)
 
         # boiler/ just go through arr and and find/union the nodes
-        for a,b in arr:
+        for a, b in arr:
             x = self.find(parent, a)
             y = self.find(parent, b)
 
@@ -151,9 +203,7 @@ class LabTwo:
                 output.append([a, b, "Unknown"])
                 self.union(parent, rank, x, y)
 
-
-
-        #while for all nodes to be visited
+        # while for all nodes to be visited
         while e < self.vert:
             # picks edges in ascending order
             a, b, weight = self.graph[i]
@@ -165,21 +215,24 @@ class LabTwo:
             # or if they belong to different sets
             if x != y:
                 e += 1
-                output.append([a,b,weight])
+                output.append([a, b, weight])
                 self.union(parent, rank, x, y)
 
-        for u, v, weight in output:
-            print(u, '-', v, '@', weight)
+        self.MSTprinter(output)
 
         return output
 
 
-X = LabTwo()
-# print("🦅 Prim ElogE:")
-X.PrimFast()
-# print("🦅 Kruskal MlogN:")
-# X.KruskalFast()
-# print('*','-'*15)
-# print("🦅 Kruskal MlogN with constrained edges:")
-# myArr = [[1,4],[2,3],[5,2]]
-# X.KruskalFastEdgesConstrained(myArr)
+if __name__ == "__main__":
+    X = LabTwo()
+    # print("🦅 Prim ElogE:")
+    # X.PrimFast()
+    # print("🦅 Kruskal MlogN:")
+    # X.KruskalFast()
+    print('*', '-' * 15)
+    print("🦅 Kruskal Second Best O(VE):")
+    X.KruskalSecBest()
+    # print('*','-'*15)
+    # print("🦅 Kruskal MlogN with constrained edges:")
+    # myArr = [[1,4],[2,3],[5,2]]
+    # X.KruskalFastEdgesConstrained(myArr)
